@@ -4,13 +4,13 @@ import(
 	"log"
     _ "github.com/go-sql-driver/mysql"
     "database/sql"
-    "os"
-    "io"
+    "encoding/json"
+    "io/ioutil"
 )
 
 type Data struct {
-	Id int
-	Text string
+	Id int `json:Id`
+	Text string `json:Text`
 }
 
 func main() {
@@ -36,13 +36,9 @@ func main() {
 		}
 		data = append(data, *row)
     }
-    file, err := os.Create("./cache/cache")
+	dataJson, _ := json.Marshal(data)
+ 	err = ioutil.WriteFile("./cache/cache.json", dataJson, 0644)
     if err != nil {
         log.Fatal(err)
     }
-    _, err = io.Copy(file, data)
-    if err != nil {
-        log.Fatal(err)
-    }
-    file.Close()
 }

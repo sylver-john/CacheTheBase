@@ -7,13 +7,12 @@ import (
     "database/sql"
     "encoding/json"
     "os"
-    "io"
     "io/ioutil"
 )
 
 type Data struct {
-	Id int
-	Text string
+	Id int `json:Id`
+	Text string `json:Text`
 }
 
 func main() {
@@ -26,17 +25,15 @@ func main() {
 }
 
 func getData(w http.ResponseWriter, r *http.Request) {
-	if _, err := os.Stat("./cache/cache"); err == nil {
-		r, wi := io.Pipe()
-	    go func() {
-	        defer wi.Close()
-	        newFile, err := ioutil.ReadFile("./cache/cache")
-	        if err != nil {
-	            log.Fatal(err)
-	        }
-			json.NewEncoder(wi).Encode(newFile)
-			json.NewEncoder(w).Encode(r)
-	    }()
+	if _, err := os.Stat("./cache/cache.json"); err == nil {
+		log.Print("use cache file")
+		file, err := ioutil.ReadFile("./cache/cache.json")
+		if err != nil {
+			log.Fatal(err)
+		}
+		var data *[]Data
+   		err = json.Unmarshal(file, &data)
+		json.NewEncoder(w).Encode(data)
 	    return
 	}
 	db, err := sql.Open("mysql","root:@tcp(127.0.0.1:3306)/base_test")
