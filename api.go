@@ -6,6 +6,9 @@ import (
     _ "github.com/go-sql-driver/mysql"
     "database/sql"
     "encoding/json"
+    "os"
+    "io"
+    "io/ioutil"
 )
 
 type Data struct {
@@ -23,6 +26,19 @@ func main() {
 }
 
 func getData(w http.ResponseWriter, r *http.Request) {
+	if _, err := os.Stat("./cache/cache"); err == nil {
+		r, wi := io.Pipe()
+	    go func() {
+	        defer wi.Close()
+	        newFile, err := ioutil.ReadFile("./cache/cache")
+	        if err != nil {
+	            log.Fatal(err)
+	        }
+			json.NewEncoder(wi).Encode(newFile)
+			json.NewEncoder(w).Encode(r)
+	    }()
+	    return
+	}
 	db, err := sql.Open("mysql","root:@tcp(127.0.0.1:3306)/base_test")
 	if err != nil {
 		log.Fatal(err)
