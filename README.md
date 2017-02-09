@@ -51,13 +51,30 @@ go run fileGenerator.go
 `` 
 (which could be a cron job).It will execute the sql request and generate a file with the sql result as content with :
 ```go
-    file, err := os.Create("./cache/cache")
-    if err != nil {
-        log.Fatal(err)
-    }
-    _, err = io.Copy(file, data)
-    if err != nil {
-        log.Fatal(err)
-    }
-    file.Close()
+	var data []Data
+    	for rows.Next() {
+    		row := new(Data)
+        	err = rows.Scan(&row.Id, &row.Text)
+		if err != nil {
+			log.Fatal(err)
+		}
+		data = append(data, *row)
+    	}
+	dataJson, _ := json.Marshal(data)
+ 	err = ioutil.WriteFile("./cache/cache.json", dataJson, 0644)
+```
+
+## And finally in the Api Handler we use the json instead of doing a SQL request with :
+```go
+	if _, err := os.Stat("./cache/cache.json"); err == nil {
+		log.Print("use cache file")
+		file, err := ioutil.ReadFile("./cache/cache.json")
+		if err != nil {
+			log.Fatal(err)
+		}
+		var data *[]Data
+   		err = json.Unmarshal(file, &data)
+		json.NewEncoder(w).Encode(data)
+	    return
+	}
 ```
