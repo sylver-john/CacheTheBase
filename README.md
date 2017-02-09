@@ -78,3 +78,7 @@ go run fileGenerator.go
 	    return
 	}
 ```
+
+## Why ?
+
+If you got a DB server which receive to much SQL request, this could be a way to prevent some issues without using a cache solution like Varnish or Squid 
